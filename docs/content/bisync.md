@@ -387,6 +387,28 @@ otherwise your prior listing files may not contain the attributes you wish to
 compare (for example, they will not have stored checksums if you were not
 previously comparing checksums.)
 
+### --independent-modtimes
+
+Use `--independent-modtimes` when both paths provide meaningful modification
+times for detecting changes on each individual path, but those timestamps are
+not expected to be equal across paths after a transfer.
+
+With this option, bisync still compares each path's current modtime with that
+same path's prior listing, so modtime-only changes remain detectable. However,
+bisync does not require Path1 and Path2 modtimes to match, does not copy an
+otherwise equal file merely to reconcile cross-path timestamps, and refreshes
+the actual size and modtime of successfully transferred objects on each path
+before saving the final listings.
+
+Because timestamps from different paths are intentionally treated as
+incomparable, `--resync-mode newer`, `--resync-mode older`,
+`--conflict-resolve newer`, and `--conflict-resolve older` are incompatible
+with `--independent-modtimes`.
+
+This option is intended for backends where a server-side timestamp reliably
+changes when content changes, but the destination does not preserve the source
+timestamp during upload.
+
 ### --ignore-listing-checksum
 
 When `--checksum` or `--compare checksum` is set, bisync will retrieve (or

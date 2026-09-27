@@ -3,6 +3,7 @@ package webdav
 
 import (
 	"testing"
+	"time"
 
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fstest"
@@ -61,4 +62,40 @@ func TestIntegration4(t *testing.T) {
 
 func (f *Fs) SetUploadChunkSize(cs fs.SizeSuffix) (fs.SizeSuffix, error) {
 	return f.setUploadChunkSize(cs)
+}
+
+func TestTrustServerModTimeDisabledByDefault(t *testing.T) {
+	f := &Fs{
+		features:  &fs.Features{},
+		precision: fs.ModTimeNotSupported,
+	}
+
+	err := f.setQuirks(t.Context(), "other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := f.Precision(), fs.ModTimeNotSupported; got != want {
+		t.Fatalf("Precision() = %v, want %v", got, want)
+	}
+}
+
+func TestTrustServerModTime(t *testing.T) {
+	f := &Fs{
+		opt: Options{
+			TrustServerModTime: true,
+		},
+		features:  &fs.Features{},
+		precision: fs.ModTimeNotSupported,
+	}
+
+	err := f.setQuirks(t.Context(), "other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := f.Precision(), time.Second; got != want {
+		t.Fatalf("Precision() = %v, want %v", got, want)
+	}
+	if !f.useStandardProps {
+		t.Fatal("trust_server_modtime must enable standard WebDAV properties")
+	}
 }

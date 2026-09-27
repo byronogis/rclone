@@ -104,6 +104,11 @@ func init() {
 				Help:  "Other site/service or software",
 			}},
 		}, {
+			Name:     "trust_server_modtime",
+			Help:     "Trust the standard WebDAV getlastmodified property as the object modification time.\n\nUse this only when the server reliably updates getlastmodified whenever file content changes.",
+			Advanced: true,
+			Default:  false,
+		}, {
 			Name:      "user",
 			Help:      "User name.\n\nIn case NTLM authentication is used, the username should be in the format 'Domain\\User'.",
 			Sensitive: true,
@@ -195,6 +200,7 @@ which rclone otherwise refuses to do.
 type Options struct {
 	URL                string               `config:"url"`
 	Vendor             string               `config:"vendor"`
+	TrustServerModTime bool                 `config:"trust_server_modtime"`
 	User               string               `config:"user"`
 	Pass               string               `config:"pass"`
 	BearerToken        string               `config:"bearer_token"`
@@ -727,6 +733,11 @@ func (f *Fs) setQuirks(ctx context.Context, vendor string) error {
 		f.useStandardProps = true
 	default:
 		fs.Debugf(f, "Unknown vendor %q", vendor)
+	}
+
+	if f.opt.TrustServerModTime {
+		f.precision = time.Second
+		f.useStandardProps = true
 	}
 
 	// Remove PutStream from optional features
