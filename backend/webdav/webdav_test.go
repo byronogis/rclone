@@ -64,7 +64,6 @@ func (f *Fs) SetUploadChunkSize(cs fs.SizeSuffix) (fs.SizeSuffix, error) {
 	return f.setUploadChunkSize(cs)
 }
 
-
 func TestTrustServerModTime(t *testing.T) {
 	f := &Fs{
 		opt: Options{
