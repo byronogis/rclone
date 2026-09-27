@@ -84,6 +84,9 @@ func rcBisync(ctx context.Context, in rc.Params) (out rc.Params, err error) {
 	if opt.Resync, err = in.GetBool("resync"); rc.NotErrParamNotFound(err) {
 		fs.Debugf("resync", "optional parameter is missing. using default value: %v", opt.Resync)
 	}
+	if opt.IndependentModtimes, err = in.GetBool("independentModtimes"); rc.NotErrParamNotFound(err) {
+		fs.Debugf("independentModtimes", "optional parameter is missing. using default value: %v", opt.IndependentModtimes)
+	}
 	if opt.CheckAccess, err = in.GetBool("checkAccess"); rc.NotErrParamNotFound(err) {
 		fs.Debugf("checkAccess", "optional parameter is missing. using default value: %v", opt.CheckAccess)
 	}
