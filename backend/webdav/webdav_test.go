@@ -64,6 +64,24 @@ func (f *Fs) SetUploadChunkSize(cs fs.SizeSuffix) (fs.SizeSuffix, error) {
 	return f.setUploadChunkSize(cs)
 }
 
+func TestTrustServerModTimeDisabledByDefault(t *testing.T) {
+	f := &Fs{
+		features:  &fs.Features{},
+		precision: fs.ModTimeNotSupported,
+	}
+
+	err := f.setQuirks(t.Context(), "other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := f.Precision(), fs.ModTimeNotSupported; got != want {
+		t.Fatalf("Precision() = %v, want %v", got, want)
+	}
+	if f.useStandardProps {
+		t.Fatal("standard WebDAV properties must remain disabled for vendor other unless trust_server_modtime is enabled")
+	}
+}
+
 func TestTrustServerModTime(t *testing.T) {
 	f := &Fs{
 		opt: Options{
