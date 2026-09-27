@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rclone/rclone/cmd/bisync/bilib"
 	"github.com/rclone/rclone/fs/cache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -75,7 +76,7 @@ func TestRefreshTransferredMetadata(t *testing.T) {
 		},
 	}
 
-	files := map[string]struct{}{remote: {}}
+	files := bilib.ToNames([]string{remote})
 	require.NoError(t, b.refreshTransferredMetadata(ctx, src, dst, srcList, dstList, files))
 
 	srcObj, err := src.NewObject(ctx, remote)
@@ -120,7 +121,7 @@ func TestRefreshTransferredMetadataFailure(t *testing.T) {
 		},
 	}
 
-	files := map[string]struct{}{remote: {}}
+	files := bilib.ToNames([]string{remote})
 	err = b.refreshTransferredMetadata(ctx, src, dst, srcList, dstList, files)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "refresh metadata")
