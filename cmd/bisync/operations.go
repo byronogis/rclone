@@ -98,6 +98,12 @@ func Bisync(ctx context.Context, fs1, fs2 fs.Fs, optArg *Options) (err error) {
 	}
 
 	b.setResyncDefaults()
+	if opt.IndependentModtimes && (opt.ResyncMode == PreferNewer || opt.ResyncMode == PreferOlder) {
+		return fmt.Errorf("--resync-mode %s is incompatible with --independent-modtimes because modification times are not comparable across paths", opt.ResyncMode.String())
+	}
+	if opt.IndependentModtimes && (opt.ConflictResolve == PreferNewer || opt.ConflictResolve == PreferOlder) {
+		return fmt.Errorf("--conflict-resolve %s is incompatible with --independent-modtimes because modification times are not comparable across paths", opt.ConflictResolve.String())
+	}
 
 	err = b.setResolveDefaults()
 	if err != nil {
