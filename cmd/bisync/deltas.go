@@ -409,7 +409,7 @@ func (b *bisyncRun) applyDeltas(ctx context.Context, ds1, ds2 *deltaSet) (result
 							// the Path1 version is deemed "correct" in this scenario
 							fs.Infof(alias, "Files are equal but will copy anyway to fix case to %s", file)
 							copy1to2.Add(file)
-						} else if b.opt.Compare.Modtime && timeDiffers(ctx, b.march.ls1.getTime(b.march.ls1.getTryAlias(file, alias)), b.march.ls2.getTime(b.march.ls2.getTryAlias(file, alias)), b.fs1, b.fs2) {
+						} else if b.opt.Compare.Modtime && !b.opt.IndependentModtimes && timeDiffers(ctx, b.march.ls1.getTime(b.march.ls1.getTryAlias(file, alias)), b.march.ls2.getTime(b.march.ls2.getTryAlias(file, alias)), b.fs1, b.fs2) {
 							fs.Infof(file, "Files are equal but will copy anyway to update modtime (will not rename)")
 							if b.march.ls1.getTime(b.march.ls1.getTryAlias(file, alias)).Before(b.march.ls2.getTime(b.march.ls2.getTryAlias(file, alias))) {
 								// Path2 is newer
