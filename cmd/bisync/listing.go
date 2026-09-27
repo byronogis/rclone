@@ -668,19 +668,11 @@ func (b *bisyncRun) modifyListing(ctx context.Context, src fs.Fs, dst fs.Fs, res
 
 	if b.opt.IndependentModtimes && !b.opt.DryRun {
 		refreshFiles := bilib.Names{}
-		for _, queueFile := range queue.ToList() {
-			if errors.has(queueFile) {
-				continue
-			}
-			if srcList.has(queueFile) || dstList.has(queueFile) || srcList.has(b.aliases.Alias(queueFile)) || dstList.has(b.aliases.Alias(queueFile)) {
-				refreshFiles.Add(queueFile)
-			}
+		for _, remote := range srcWinners.list {
+			refreshFiles.Add(remote)
 		}
-		for _, rename := range b.renames {
-			srcOldName, srcNewName, _, _ := rename.getNames(is1to2)
-			if srcNewName != "" && srcNewName != srcOldName {
-				refreshFiles.Add(srcNewName)
-			}
+		for _, remote := range dstWinners.list {
+			refreshFiles.Add(remote)
 		}
 		if err := b.refreshTransferredMetadata(ctx, src, dst, srcList, dstList, refreshFiles); err != nil {
 			b.handleErr(nil, "error refreshing transferred metadata", err, true, true)
