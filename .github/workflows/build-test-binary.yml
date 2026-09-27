@@ -30,10 +30,13 @@ jobs:
       - name: Verify independent modtimes flag
         shell: pwsh
         run: |
-          $help = .\rclone-independent-modtimes.exe bisync --help
-          if ($help -notmatch "independent-modtimes") {
-            throw "bisync --independent-modtimes flag not found"
-          }
+          .\rclone-independent-modtimes.exe bisync --help |
+            Select-String -SimpleMatch -- "--independent-modtimes" -Quiet |
+            ForEach-Object {
+              if (-not $_) {
+                throw "bisync --independent-modtimes flag not found"
+              }
+            }
 
       - name: Upload Windows binary
         uses: actions/upload-artifact@v7
