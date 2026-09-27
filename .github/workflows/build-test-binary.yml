@@ -19,6 +19,10 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Test patched packages
+        shell: pwsh
+        run: go test ./cmd/bisync ./backend/webdav
+
       - name: Build rclone
         shell: pwsh
         run: go build -trimpath -o rclone-independent-modtimes.exe .
