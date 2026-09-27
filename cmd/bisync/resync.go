@@ -23,9 +23,6 @@ func (b *bisyncRun) setResyncDefaults() {
 	}
 
 	// checks and warnings
-	if b.opt.IndependentModtimes && (b.opt.ResyncMode == PreferNewer || b.opt.ResyncMode == PreferOlder) {
-		return
-	}
 	if (b.opt.ResyncMode == PreferNewer || b.opt.ResyncMode == PreferOlder) && (b.fs1.Precision() == fs.ModTimeNotSupported || b.fs2.Precision() == fs.ModTimeNotSupported) {
 		fs.Logf(nil, Color(terminal.YellowFg, "WARNING: ignoring --resync-mode %s as at least one remote does not support modtimes."), b.opt.ResyncMode.String())
 		b.opt.ResyncMode = PreferPath1
