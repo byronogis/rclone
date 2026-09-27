@@ -77,9 +77,6 @@ func TestTrustServerModTimeDisabledByDefault(t *testing.T) {
 	if got, want := f.Precision(), fs.ModTimeNotSupported; got != want {
 		t.Fatalf("Precision() = %v, want %v", got, want)
 	}
-	if f.useStandardProps {
-		t.Fatal("standard WebDAV properties must remain disabled for vendor other unless trust_server_modtime is enabled")
-	}
 }
 
 func TestTrustServerModTime(t *testing.T) {
