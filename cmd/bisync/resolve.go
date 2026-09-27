@@ -104,6 +104,10 @@ func (b *bisyncRun) setResolveDefaults() error {
 	b.opt.ConflictSuffix2 = "." + b.opt.ConflictSuffix2
 
 	// checks and warnings
+	if b.opt.IndependentModtimes && (b.opt.ConflictResolve == PreferNewer || b.opt.ConflictResolve == PreferOlder) {
+		fs.Logf(nil, Color(terminal.YellowFg, "WARNING: ignoring --conflict-resolve %s because --independent-modtimes makes cross-path modtimes incomparable."), b.opt.ConflictResolve.String())
+		b.opt.ConflictResolve = PreferNone
+	}
 	if (b.opt.ConflictResolve == PreferNewer || b.opt.ConflictResolve == PreferOlder) && (b.fs1.Precision() == fs.ModTimeNotSupported || b.fs2.Precision() == fs.ModTimeNotSupported) {
 		fs.Logf(nil, Color(terminal.YellowFg, "WARNING: ignoring --conflict-resolve %s as at least one remote does not support modtimes."), b.opt.ConflictResolve.String())
 		b.opt.ConflictResolve = PreferNone
