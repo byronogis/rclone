@@ -57,6 +57,7 @@ type Options struct {
 	DebugName             string
 	MaxLock               fs.Duration
 	ConflictResolve       Prefer
+	IndependentModtimes   bool
 	ConflictLoser         ConflictLoserAction
 	ConflictSuffixFlag    string
 	ConflictSuffix1       string
@@ -149,6 +150,7 @@ func init() {
 	flags.BoolVarP(cmdFlags, &Opt.Compare.DownloadHash, "download-hash", "", Opt.Compare.DownloadHash, "Compute hash by downloading when otherwise unavailable. (warning: may be slow and use lots of data!)", "")
 	flags.FVarP(cmdFlags, &Opt.MaxLock, "max-lock", "", "Consider lock files older than this to be expired (default: 0 (never expire)) (minimum: 2m)", "")
 	flags.FVarP(cmdFlags, &Opt.ConflictResolve, "conflict-resolve", "", "Automatically resolve conflicts by preferring the version that is: "+ConflictResolveList+" (default: none)", "")
+	flags.BoolVarP(cmdFlags, &Opt.IndependentModtimes, "independent-modtimes", "", Opt.IndependentModtimes, "Track modification times independently on each path and refresh transferred file metadata before saving listings.", "")
 	flags.FVarP(cmdFlags, &Opt.ConflictLoser, "conflict-loser", "", "Action to take on the loser of a sync conflict (when there is a winner) or on both files (when there is no winner): "+ConflictLoserList+" (default: num)", "")
 	flags.StringVarP(cmdFlags, &Opt.ConflictSuffixFlag, "conflict-suffix", "", Opt.ConflictSuffixFlag, "Suffix to use when renaming a --conflict-loser. Can be either one string or two comma-separated strings to assign different suffixes to Path1/Path2. (default: 'conflict')", "")
 	_ = cmdFlags.MarkHidden("debugname")
