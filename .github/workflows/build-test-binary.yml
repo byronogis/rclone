@@ -22,42 +22,8 @@ jobs:
       - name: Test patched packages
         shell: pwsh
         run: |
-          go test ./cmd/bisync -run 'Test(FileInfoEqualIndependentModtimes|RefreshTransferredMetadata|RefreshTransferredMetadataFailure)
-
-      - name: Build rclone
-        shell: pwsh
-        run: go build -trimpath -o rclone-independent-modtimes.exe .
-
-      - name: Show version
-        shell: pwsh
-        run: .\rclone-independent-modtimes.exe version
-
-      - name: Upload Windows binary
-        uses: actions/upload-artifact@v7
-        with:
-          name: rclone-independent-modtimes-windows-amd64
-          path: rclone-independent-modtimes.exe
-          if-no-files-found: error
-          retention-days: 14
-
-          go test ./backend/webdav -run '^TestTrustServerModTime
-
-      - name: Build rclone
-        shell: pwsh
-        run: go build -trimpath -o rclone-independent-modtimes.exe .
-
-      - name: Show version
-        shell: pwsh
-        run: .\rclone-independent-modtimes.exe version
-
-      - name: Upload Windows binary
-        uses: actions/upload-artifact@v7
-        with:
-          name: rclone-independent-modtimes-windows-amd64
-          path: rclone-independent-modtimes.exe
-          if-no-files-found: error
-          retention-days: 14
-
+          go test ./cmd/bisync -run 'Test(FileInfoEqualIndependentModtimes|RefreshTransferredMetadata|RefreshTransferredMetadataFailure)$'
+          go test ./backend/webdav -run '^TestTrustServerModTime$'
 
       - name: Build rclone
         shell: pwsh
