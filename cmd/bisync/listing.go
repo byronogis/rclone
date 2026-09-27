@@ -196,7 +196,7 @@ func (b *bisyncRun) fileInfoEqual(file1, file2 string, ls1, ls2 *fileList) bool 
 			equal = false
 		}
 	}
-	if b.opt.Compare.Modtime {
+	if b.opt.Compare.Modtime && !b.opt.IndependentModtimes {
 		if timeDiffers(b.fctx, ls1.getTime(file1), ls2.getTime(file2), b.fs1, b.fs2) {
 			b.indent("ERROR", file1, fmt.Sprintf("Modtime not equal in listing. Path1: %v, Path2: %v", ls1.getTime(file1), ls2.getTime(file2)))
 			equal = false
@@ -666,6 +666,28 @@ func (b *bisyncRun) modifyListing(ctx context.Context, src fs.Fs, dst fs.Fs, res
 		b.recheck(ctxRecheck, src, dst, srcList, dstList, is1to2)
 	}
 
+	if b.opt.IndependentModtimes && !b.opt.DryRun {
+		refreshFiles := bilib.Names{}
+		for _, queueFile := range queue.ToList() {
+			if errors.has(queueFile) {
+				continue
+			}
+			if srcList.has(queueFile) || dstList.has(queueFile) || srcList.has(b.aliases.Alias(queueFile)) || dstList.has(b.aliases.Alias(queueFile)) {
+				refreshFiles.Add(queueFile)
+			}
+		}
+		for _, rename := range b.renames {
+			srcOldName, srcNewName, _, _ := rename.getNames(is1to2)
+			if srcNewName != "" && srcNewName != srcOldName {
+				refreshFiles.Add(srcNewName)
+			}
+		}
+		if err := b.refreshTransferredMetadata(ctx, src, dst, srcList, dstList, refreshFiles); err != nil {
+			b.handleErr(nil, "error refreshing transferred metadata", err, true, true)
+			return err
+		}
+	}
+
 	if b.InGracefulShutdown {
 		var toKeep []string
 		var toRollback []string
@@ -721,6 +743,44 @@ func (b *bisyncRun) modifyListing(ctx context.Context, src fs.Fs, dst fs.Fs, res
 	b.handleErr(dstList, "error saving dstList from modifyListing", err, true, true)
 
 	return err
+}
+
+// refreshTransferredMetadata refreshes the actual post-transfer metadata on both paths.
+// It is intentionally independent of recheck(): transferred objects are already known to
+// have completed successfully, and their two modtimes are allowed to differ.
+func (b *bisyncRun) refreshTransferredMetadata(ctx context.Context, src, dst fs.Fs, srcList, dstList *fileList, files bilib.Names) error {
+	refreshOne := func(f fs.Fs, list *fileList, remote string) error {
+		actual := remote
+		if !list.has(actual) {
+			actual = b.aliases.Alias(remote)
+		}
+		if !list.has(actual) {
+			return nil
+		}
+		obj, err := f.NewObject(ctx, actual)
+		if err != nil {
+			return fmt.Errorf("refresh metadata for %q on %s: %w", actual, bilib.FsPath(f), err)
+		}
+		info := list.get(actual)
+		if info == nil {
+			return nil
+		}
+		info.size = obj.Size()
+		if b.opt.Compare.Modtime {
+			info.time = obj.ModTime(ctx).In(TZ)
+		}
+		return nil
+	}
+
+	for _, remote := range files.ToList() {
+		if err := refreshOne(src, srcList, remote); err != nil {
+			return err
+		}
+		if err := refreshOne(dst, dstList, remote); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // recheck the ones we're not sure about
